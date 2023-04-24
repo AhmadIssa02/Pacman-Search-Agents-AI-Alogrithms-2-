@@ -80,85 +80,65 @@ class ReflexAgent(Agent):
             ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        # print("successorGameState: ", successorGameState)
-        # print("newPos: ", newPos)
-        # print("newFood: ", newFood)
-        # for ghost in range(len(newGhostStates)):
-        #     print("newGhostStates: ", newGhostStates[ghost].getPosition())
+        # our main score variable
+        score = successorGameState.getScore()
 
-        # print("newScaredTimes: ", newScaredTimes)
-        # # print("successorGameState.getScore(): ", successorGameState.getScore())
-        # pos = currentGameState.getPacmanPosition()
-        # currentScore = scoreEvaluationFunction(currentGameState)
-        # def distance_to_closest_food(position, food_positions):
-        #     distances = [util.manhattanDistance(
-        #         position, food_position) for food_position in food_positions]
-        #     return min(distances) if distances else 0
+        # Get food and capsules positions, distances, min distances, and the amount left
+        foodList = newFood.asList()
+        foodDistances = [util.manhattanDistance(
+            newPos, food) for food in foodList]
+        minFoodDistance = min(foodDistances) if len(foodDistances) > 0 else 0
+        numFoodLeft = len(foodList)
+        capsuleList = currentGameState.getCapsules()
+        # capsuleDistances = [util.manhattanDistance(
+        # newPos, capsule) for capsule in capsuleList]
+        # minCapsuleDistance = min(capsuleDistances) if len(
+        # capsuleDistances) > 0 else 0
+        numCapusles = len(capsuleList)
+        numCapsulesLeft = len(successorGameState.getCapsules())
 
-        def get_score(position, food_positions, ghost_positions):
-            score = successorGameState.getScore()
-            score -= min([util.manhattanDistance(position, food_position)
-                         for food_position in food_positions]) * 3
-            score += len(food_positions) * 10
-            score += successorGameState.getScore() - currentGameState.getScore()*10
-            foodList = newFood.asList()
-            foodDistance = [0]
-            if successorGameState.isWin():
-                return 99999999999
-            for pos in foodList:
-                foodDistance.append(manhattanDistance(newPos, pos))
-            ghostPos = []
-            for ghost in newGhostStates:
-                ghostPos.append(ghost.getPosition())
+        # Get ghost positions and distances, min distances, and scared ghost distances
+        scaredGhosts = [
+            ghost for ghost in newGhostStates if ghost.scaredTimer > 0]
+        ghostPositions = [ghost.getPosition() for ghost in newGhostStates]
+        ghostDistances = [util.manhattanDistance(
+            newPos, ghost) for ghost in ghostPositions]
+        minGhostDistance = min(ghostDistances) if len(
+            ghostDistances) > 0 else 0
+        scaredGhostDistances = [util.manhattanDistance(
+            newPos, ghost.getPosition()) for ghost in scaredGhosts]
+        minScaredGhostDistance = min(scaredGhostDistances) if len(
+            scaredGhostDistances) > 0 else 0
 
-            ghostDistance = []
-            for pos in ghostPos:
-                ghostDistance.append(manhattanDistance(newPos, pos))
+        # Update score based on various conditions (I tried different numbers by trial and error)
+        score -= minFoodDistance * 5
+        # stay away from ghosts
+        if minGhostDistance == 0:
+            score -= 10000
+        elif minGhostDistance <= 2:
+            score -= 800
+        elif minGhostDistance <= 4:
+            score -= 200
 
-            ghostPosCurrent = []
-            for ghost in currentGameState.getGhostStates():
-                ghostPosCurrent.append(ghost.getPosition())
-            ghostDistanceCurrent = []
-            for pos in ghostPosCurrent:
-                ghostDistanceCurrent.append(manhattanDistance(newPos, pos))
-            numberOfFoodLeft = len(foodList)
-            numberOfFoodLeftCurrent = len(currentGameState.getFood().asList())
-            numberofPowerPellets = len(successorGameState.getCapsules())
-            sumScaredTimes = sum(newScaredTimes)
+    # if the ghost is scared and there is enough time, eat it.
+        if min(newScaredTimes) > 1:
+            # eat scared ghosts
+            if minGhostDistance < 3:
+                score += 1500
+        else:
+            # penalize pacman for wasting time
+            score -= 100
+        if action == Directions.STOP:
+            # penalize pacman for wasting time
+            score -= 10
+        if numFoodLeft < currentGameState.getNumFood():
+            # encourage pacman to eat food
+            score += 300
+        if numCapsulesLeft < numCapusles:
+            # encourage pacman to eat power capsules
+            score += 1000
 
-            if sumScaredTimes > 0:
-                if min(ghostDistanceCurrent) < min(ghostDistance):
-                    score += 200
-                else:
-                    score -= 100
-            else:
-                if min(ghostDistanceCurrent) < min(ghostDistance):
-                    score -= 100
-                else:
-                    score += 200
-
-            if action == Directions.STOP:
-                score -= 10
-            if newPos in currentGameState.getCapsules():
-                score += 400 * numberofPowerPellets
-            if numberOfFoodLeft < numberOfFoodLeftCurrent:
-                score += 300
-
-            for ghost in ghost_positions:
-                ghost_distance = util.manhattanDistance(
-                    position, ghost.getPosition())
-                if ghost_distance == 0:
-                    score -= 100
-                elif ghost_distance <= 2:
-                    score -= 800
-                elif ghost_distance <= 4:
-                    score -= 150
-
-            return score
-
-        return get_score(newPos, newFood.asList(), newGhostStates)
-
-        # return successorGameState.getScore()
+        return score
 
 
 def scoreEvaluationFunction(currentGameState: GameState):
