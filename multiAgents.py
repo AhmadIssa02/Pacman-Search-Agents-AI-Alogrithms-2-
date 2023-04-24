@@ -90,23 +90,24 @@ class ReflexAgent(Agent):
         # # print("successorGameState.getScore(): ", successorGameState.getScore())
         # pos = currentGameState.getPacmanPosition()
         # currentScore = scoreEvaluationFunction(currentGameState)
-        def distance_to_closest_food(position, food_positions):
-            distances = [util.manhattanDistance(
-                position, food_position) for food_position in food_positions]
-            return min(distances) if distances else 0
+        # def distance_to_closest_food(position, food_positions):
+        #     distances = [util.manhattanDistance(
+        #         position, food_position) for food_position in food_positions]
+        #     return min(distances) if distances else 0
 
         def get_score(position, food_positions, ghost_positions):
             score = successorGameState.getScore()
-            score -= distance_to_closest_food(position, food_positions) * 3
+            score -= min([util.manhattanDistance(position, food_position)
+                         for food_position in food_positions]) * 3
             score += len(food_positions) * 10
-            score += successorGameState.getScore() - currentGameState.getScore()
+            score += successorGameState.getScore() - currentGameState.getScore()*10
             foodList = newFood.asList()
             foodDistance = [0]
             if successorGameState.isWin():
-                return 999999
+                return 99999999999
             for pos in foodList:
                 foodDistance.append(manhattanDistance(newPos, pos))
-                ghostPos = []
+            ghostPos = []
             for ghost in newGhostStates:
                 ghostPos.append(ghost.getPosition())
 
@@ -114,7 +115,6 @@ class ReflexAgent(Agent):
             for pos in ghostPos:
                 ghostDistance.append(manhattanDistance(newPos, pos))
 
-            """ Manhattan distance to each ghost in the game from current state"""
             ghostPosCurrent = []
             for ghost in currentGameState.getGhostStates():
                 ghostPosCurrent.append(ghost.getPosition())
@@ -131,7 +131,6 @@ class ReflexAgent(Agent):
                     score += 200
                 else:
                     score -= 100
-                # If ghosts are not scared greater distance to ghosts is better.
             else:
                 if min(ghostDistanceCurrent) < min(ghostDistance):
                     score -= 100
