@@ -1,4 +1,4 @@
-NOTE: My agent is ExpectimaxAgent using the better evaluation function
+
 TO RUN MY AGENT, USE THE FOLLOWING COMMAND python pacman.py -p ExpectimaxAgent -l mediumClassic -a evalFn=better
 
 ########Question 1:
