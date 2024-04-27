@@ -1,4 +1,4 @@
-
+![Pacman Image](https://github.com/AhmadIssa02/Pacman-Search-Agents-AI-Alogrithms-2-/blob/master/AI%20Pacman.jpg)
 TO RUN MY AGENT, USE THE FOLLOWING COMMAND python pacman.py -p ExpectimaxAgent -l mediumClassic -a evalFn=better
 
 ########Question 1:
